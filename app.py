@@ -64,12 +64,11 @@ def remove_expired_users():
 
                     if current_time > exp_time:
                         log_event(f"Removing expired user: {user['name']}")
-                        user_info = hotspot_users.get(name=user['name'])
-                        if user_info:
-                            user_id = user_info[0]['.id']
-                            hotspot_users.remove(id=user_id)
+                        if '.id' in user:
+                            hotspot_users.remove(id=user['.id'])
                         else:
                             log_event(f"Error: User ID not found for {user['name']}")
+                            log_event(f"User object: {user}")
                 except ValueError as e:
                     log_event(f"Error parsing time: {exp_time_str}, Error: {str(e)}")
     except Exception as e:

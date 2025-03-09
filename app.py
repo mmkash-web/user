@@ -25,6 +25,15 @@ def get_router_connection():
         log_event(f"Connection Error: {str(e)}")
         return None, None
 
+def parse_time_string(time_str):
+    formats = ["%Y-%m-%d %H:%M:%S", "%H:%M:%S"]
+    for fmt in formats:
+        try:
+            return datetime.datetime.strptime(time_str, fmt)
+        except ValueError:
+            continue
+    raise ValueError(f"time data '{time_str}' does not match any expected format")
+
 def remove_expired_users():
     api_pool, router = get_router_connection()
     if router is None:
@@ -43,7 +52,7 @@ def remove_expired_users():
             if 'expires:' in comment:
                 exp_time_str = comment.split('expires:')[1].strip()
                 try:
-                    exp_time = datetime.datetime.strptime(exp_time_str, "%Y-%m-%d %H:%M:%S")
+                    exp_time = parse_time_string(exp_time_str)
                     exp_time = TIMEZONE.localize(exp_time)
                     log_event(f"User: {user['name']} expires at: {exp_time_str}")
 

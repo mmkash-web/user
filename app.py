@@ -42,14 +42,16 @@ def remove_expired_users():
             comment = user.get('comment', '')
             if 'expires:' in comment:
                 exp_time_str = comment.split('expires:')[1].strip()
-                exp_time = datetime.datetime.strptime(exp_time_str, "%Y-%m-%d %H:%M:%S")
-                exp_time = TIMEZONE.localize(exp_time)
+                try:
+                    exp_time = datetime.datetime.strptime(exp_time_str, "%Y-%m-%d %H:%M:%S")
+                    exp_time = TIMEZONE.localize(exp_time)
+                    log_event(f"User: {user['name']} expires at: {exp_time_str}")
 
-                log_event(f"User: {user['name']} expires at: {exp_time_str}")
-
-                if current_time > exp_time:
-                    log_event(f"Removing expired user: {user['name']}")
-                    hotspot_users.remove(id=user['.id'])
+                    if current_time > exp_time:
+                        log_event(f"Removing expired user: {user['name']}")
+                        hotspot_users.remove(id=user['.id'])
+                except ValueError as e:
+                    log_event(f"Error parsing time: {exp_time_str}, Error: {str(e)}")
     except Exception as e:
         log_event(f"Error: {str(e)}")
     finally:

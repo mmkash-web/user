@@ -1,4 +1,3 @@
-
 import routeros_api
 import datetime
 import pytz
@@ -46,6 +45,7 @@ def remove_expired_users():
         log_event(f"Current time: {current_time_str}")
 
         hotspot_users = router.get_resource('/ip/hotspot/user')
+        active_users = router.get_resource('/ip/hotspot/active')
         users = hotspot_users.get()
 
         for user in users:
@@ -67,6 +67,10 @@ def remove_expired_users():
                         log_event(f"Removing expired user: {user['name']}")
                         if 'id' in user:
                             hotspot_users.remove(id=user['id'])
+                            # Log out user from active sessions
+                            active_sessions = active_users.get(username=user['name'])
+                            for session in active_sessions:
+                                active_users.remove(id=session['.id'])
                         else:
                             log_event(f"Error: User ID not found for {user['name']}")
                             log_event(f"User object: {user}")
